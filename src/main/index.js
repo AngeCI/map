@@ -1,6 +1,6 @@
 "use strict";
 
-import * from "./hkgov-api.js";
+import {} from "./hkgov-api.js";
 
 // Base map source definitions
 const baseMaps = {
