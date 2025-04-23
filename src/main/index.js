@@ -12,11 +12,11 @@ const baseMaps = {
     maxZoom: 30,
     attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, © <a href="https://carto.com/attribution">CARTO</a>'
   }),
-  "HK Lands Dept Topo (No label)": L.tileLayer.hongKong("basemap", "basemap", {
+  "HK Lands Dept Topo (No label)": L.tileLayer.hkGov("basemap", "basemap", {
     maxZoom: 20,
     attribution: '© <a href="https://api.portal.hkmapservice.gov.hk/disclaimer">Lands Department <img src="https://api.hkmapservice.gov.hk/mapapi/landsdlogo.jpg" width="25" height="25" /></a>'
   }),
-  "HK Lands Dept Aerial (No label)": L.tileLayer.hongKong("basemap", "imagery", {
+  "HK Lands Dept Aerial (No label)": L.tileLayer.hkGov("basemap", "imagery", {
     maxZoom: 20,
     attribution: '© <a href="https://api.portal.hkmapservice.gov.hk/disclaimer">Lands Department <img src="https://api.hkmapservice.gov.hk/mapapi/landsdlogo.jpg" width="25" height="25" /></a>'
   })
