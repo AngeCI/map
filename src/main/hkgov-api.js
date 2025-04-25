@@ -45,18 +45,16 @@ L.TileLayer.HKGov = L.TileLayer.extend({
       }
     }
 
-    if (!(base in metaData) || !(target in metaData[base])) {
-      if (!(base in metaData)) {
-        throw `Unknown basemap type "${base}"`;
-      }
+    if (!(base in metaData)) {
+      throw `Unknown basemap type "${base}"`;
+    }
 
-      if ((base in metaData) && !(target in metaData[base])) {
-        if (base == "basemap") {
-          throw `Unknown target type "${target}"`;
-        }
-        if (base == "label") {
-          throw `Unsupported label language "${target}"`;
-        }
+    if ((base in metaData) && !(target in metaData[base])) {
+      if (base == "basemap") {
+        throw `Unknown target type "${target}"`;
+      }
+      if (base == "label") {
+        throw `Unsupported label language "${target}"`;
       }
     }
 
@@ -74,14 +72,14 @@ L.LayerGroup.HKGov = L.LayerGroup.extend({
   initialize: function(base, label = "tc", options) {
     let metaData = L.HKGov;
 
-    if (!(basemap in metaData.basemap)) {
-      throw `Unknown basemap type "${basemap}"`;
+    if (!(base in metaData.basemap)) {
+      throw `Unknown basemap type "${base}"`;
     }
     if (!(label in metaData.label)) {
       throw `Unsupported label language "${label}"`;
     }
 
-    this._basemapLayer = L.tileLayer.hkGov("basemap", basemap);
+    this._basemapLayer = L.tileLayer.hkGov("basemap", base);
     this._labelLayer = L.tileLayer.hkGov("label", label);
 
     let myLayers = [this._basemapLayer, this._labelLayer];
@@ -99,10 +97,10 @@ L.LayerGroup.HKGov = L.LayerGroup.extend({
   }
 });
 
-L.tileLayer.hkGov = function(type, options) {
-  return new L.TileLayer.HKGov(type, options);
+L.tileLayer.hkGov = function(base, target, options) {
+  return new L.TileLayer.HKGov(base, target, options);
 };
 
-L.layerGroup.hkGov = function(type, options) {
-  return new L.LayerGroup.HKGov(type, options);
+L.layerGroup.hkGov = function(base, label, options) {
+  return new L.LayerGroup.HKGov(base, label, options);
 };

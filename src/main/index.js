@@ -1,6 +1,7 @@
 "use strict";
 
 import {} from "./hkgov-api.js";
+import {} from "../../libs/Leaflet.Coordinates@MrMufflon/Leaflet.Coordinates-0.1.5.min.js";
 
 // Base map source definitions
 const baseMaps = {
@@ -8,21 +9,47 @@ const baseMaps = {
     maxZoom: 19,
     attribution: '© <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
   }),
-  "CARTO": L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png", {
+  "CARTO": L.tileLayer("https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png", {
     maxZoom: 30,
     attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, © <a href="https://carto.com/attribution">CARTO</a>'
   }),
-  "HK Lands Dept Topo (No label)": L.tileLayer.hkGov("basemap", "basemap", {
+  "HK Lands Dept Topo": L.tileLayer.hkGov("basemap", "basemap", {
     maxZoom: 20,
     attribution: '© <a href="https://api.portal.hkmapservice.gov.hk/disclaimer">Lands Department <img src="https://api.hkmapservice.gov.hk/mapapi/landsdlogo.jpg" width="25" height="25" /></a>'
   }),
-  "HK Lands Dept Aerial (No label)": L.tileLayer.hkGov("basemap", "imagery", {
+  "HK Lands Dept Aerial": L.tileLayer.hkGov("basemap", "imagery", {
     maxZoom: 20,
     attribution: '© <a href="https://api.portal.hkmapservice.gov.hk/disclaimer">Lands Department <img src="https://api.hkmapservice.gov.hk/mapapi/landsdlogo.jpg" width="25" height="25" /></a>'
   })
 };
 
 const overlayMaps = {};
+
+const labelMaps = {
+  "CARTO": L.tileLayer("https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png", {
+    maxZoom: 30,
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, © <a href="https://carto.com/attribution">CARTO</a>',
+    pane: "labels"
+  }),
+  "HK Lands Dept (English)": L.tileLayer.hkGov("label", "en", {
+    maxZoom: 20,
+    minZoom: 10,
+    attribution: '© <a href="https://api.portal.hkmapservice.gov.hk/disclaimer">Lands Department <img src="https://api.hkmapservice.gov.hk/mapapi/landsdlogo.jpg" width="25" height="25" /></a>',
+    pane: "labels"
+  }),
+  "HK Lands Dept (Traditional Chinese)": L.tileLayer.hkGov("label", "tc", {
+    maxZoom: 20,
+    minZoom: 10,
+    attribution: '© <a href="https://api.portal.hkmapservice.gov.hk/disclaimer">Lands Department <img src="https://api.hkmapservice.gov.hk/mapapi/landsdlogo.jpg" width="25" height="25" /></a>',
+    pane: "labels"
+  }),
+  "HK Lands Dept (Simplified Chinese)": L.tileLayer.hkGov("label", "sc", {
+    maxZoom: 20,
+    minZoom: 10,
+    attribution: '© <a href="https://api.portal.hkmapservice.gov.hk/disclaimer">Lands Department <img src="https://api.hkmapservice.gov.hk/mapapi/landsdlogo.jpg" width="25" height="25" /></a>',
+    pane: "labels"
+  })
+};
 
 // Map initialization
 const map = L.map("map", {
@@ -33,6 +60,7 @@ const map = L.map("map", {
 });
 L.control.scale().addTo(map);
 const layerControl = L.control.layers(baseMaps, overlayMaps).addTo(map);
+L.control.layers(labelMaps).addTo(map);
 const ZoomViewer = L.Control.extend({
   onAdd() {
     const container = L.DomUtil.create("div");
@@ -46,6 +74,19 @@ const ZoomViewer = L.Control.extend({
   }
 });
 new ZoomViewer().addTo(map);
+
+const mouseposition = L.control.coordinates({
+  position: "bottomright",
+  decimals: 5,
+  decimalSeperator: ".",
+  labelTemplateLat: "Latitude: {y}",
+  labelTemplateLng: "Longitude: {x}"
+}).addTo(map);
+
+// Label pane
+map.createPane("labels");
+map.getPane("labels").style.zIndex = 650;
+map.getPane("labels").style.pointerEvents = "none";
 
 let clickMarker;
 map.on("click", (ev) => {
