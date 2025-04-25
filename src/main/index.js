@@ -23,8 +23,6 @@ const baseMaps = {
   })
 };
 
-const overlayMaps = {};
-
 const labelMaps = {
   "CARTO": L.tileLayer("https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png", {
     maxZoom: 30,
@@ -54,14 +52,17 @@ const labelMaps = {
 // Map initialization
 const map = L.map("map", {
   attributionControl: true,
+  zoomControl: false, // Move zoom control elsewhere
   layers: [baseMaps.OpenStreetMap],
   center: [22.35, 114.16],
   zoom: 11
 });
 L.control.scale().addTo(map);
-const layerControl = L.control.layers(baseMaps, overlayMaps).addTo(map);
-L.control.layers(labelMaps).addTo(map);
+const layerControl = L.control.layers(baseMaps, labelMaps).addTo(map);
 const ZoomViewer = L.Control.extend({
+  options: {
+    position: "topright"
+  },
   onAdd() {
     const container = L.DomUtil.create("div");
     container.style.width = "200px";
@@ -82,6 +83,9 @@ const mouseposition = L.control.coordinates({
   labelTemplateLat: "Latitude: {y}",
   labelTemplateLng: "Longitude: {x}"
 }).addTo(map);
+
+L.control.locate({ position: "bottomright" }).addTo(map);
+L.control.zoom({ position: "bottomright" }).addTo(map);
 
 // Label pane
 map.createPane("labels");
