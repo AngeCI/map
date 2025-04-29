@@ -19,7 +19,7 @@ const baseMaps = {
     attribution: '© <a href="https://api.portal.hkmapservice.gov.hk/disclaimer">Lands Department <img src="https://api.hkmapservice.gov.hk/mapapi/landsdlogo.jpg" width="25" height="25" /></a>'
   }),
   "HK Lands Dept Aerial": L.tileLayer.hkGov("basemap", "imagery", {
-    maxZoom: 20,
+    maxZoom: 19,
     attribution: '© <a href="https://api.portal.hkmapservice.gov.hk/disclaimer">Lands Department <img src="https://api.hkmapservice.gov.hk/mapapi/landsdlogo.jpg" width="25" height="25" /></a>'
   })
 };
@@ -65,11 +65,11 @@ const ZoomViewer = L.Control.extend({
     position: "topright"
   },
   onAdd() {
-    const container = L.DomUtil.create("div");
+    const container = document.createElement("div");
     container.style.width = "200px";
     container.style.background = "rgba(255,255,255,0.5)";
     container.style.textAlign = "left";
-    map.on("zoomstart zoom zoomend", (ev) => {
+    map.on("zoomend", (ev) => {
       container.innerHTML = `Zoom level: ${map.getZoom()}`;
     });
     return container;
@@ -99,5 +99,73 @@ map.on("click", (ev) => {
     clickMarker.removeFrom(map);
   clickMarker = L.marker(ev.latlng).bindPopup(`WGS84 coords: ${ev.latlng.toString()}`).addTo(map);
 });
+
+let FileLoader = L.Control.extend({
+  options: {
+    position: "topleft"
+  },
+  onAdd: function () {
+    let el = L.DomUtil.create("div", "leaflet-bar leaflet-control");
+    let a = L.DomUtil.create("a", "leaflet-bar-part leaflet-bar-part-single", el);
+    a.textContent = "📁";
+    a.href = "#";
+    a.setAttribute("role", "button");
+    // a.style.fontSize = "1.375rem";
+    a.style.fontSize = "1.1rem";
+
+    let input = L.DomUtil.create("input", "", el);
+    input.type = "file";
+    input.hidden = true;
+
+    L.DomEvent.on(a, "click", function (ev) {
+      L.DomEvent.stopPropagation(ev);
+      L.DomEvent.preventDefault(ev);
+      input.click();
+    });
+
+    L.DomEvent.on(input, "input", async function (ev) {
+      let file = ev.target.files[0];
+      layerControl.addOverlay(L.geoJson(JSON.parse(await file.text())), file.name);
+
+      self.file = file;
+    });
+
+    return el;
+  }
+});
+let fileLoader = new FileLoader({ position: "topleft" }).addTo(map);
+
+let Paste = L.Control.extend({
+  options: {
+    position: "topleft"
+  },
+  onAdd: function () {
+    let el = L.DomUtil.create("div", "leaflet-bar leaflet-control");
+    let a = L.DomUtil.create("a", "leaflet-bar-part leaflet-bar-part-single", el);
+    a.textContent = "📄";
+    a.href = "#";
+    a.setAttribute("role", "button");
+    a.style.fontSize = "1.1rem";
+
+    L.DomEvent.on(a, "click", async function (ev) {
+      L.DomEvent.stopPropagation(ev);
+      L.DomEvent.preventDefault(ev);
+
+      const clipboardContents = await navigator.clipboard.read();
+      for (const item of clipboardContents) {
+        if (!item.types.includes("image/png")) {
+          throw new Error("Clipboard does not contain PNG image data.");
+        };
+        let url = URL.createObjectURL(await item.getType("image/png"));
+        console.debug(url);
+        layerControl.addOverlay(L.imageOverlay(url, map.getBounds(), { opacity: 0.5 }), "Clipboard item");
+        break;
+      }
+    });
+
+    return el;
+  }
+});
+let paste = new Paste({ position: "topleft" }).addTo(map);
 
 self.map = map;
