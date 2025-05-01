@@ -168,4 +168,20 @@ let Paste = L.Control.extend({
 });
 let paste = new Paste({ position: "topleft" }).addTo(map);
 
+let GridCoords = L.GridLayer.extend({
+  createTile: function (coords) {
+    const tile = document.createElement("div");
+    tile.innerHTML = [coords.x, coords.y, coords.z].join(", ");
+    tile.style.outline = "1px solid #7baaf7";
+    tile.style.color = "#7baaf7";
+    tile.style.opacity = "0.7";
+    tile.style.fontSize = "1rem";
+    tile.style.display = "flex";
+    tile.style.justifyContent = "center";
+    tile.style.alignItems = "center";
+    return tile;
+  }
+});
+layerControl.addOverlay(new GridCoords(), "Grid cells");
+
 self.map = map;
