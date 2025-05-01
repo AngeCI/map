@@ -109,6 +109,30 @@ map.on("click", (ev) => {
   clickMarker = L.marker(ev.latlng).bindPopup(`WGS84 coords: ${ev.latlng.toString()}`).addTo(map);
 });
 
+// Serach button
+let SearchBtn = L.Control.extend({
+  options: {
+    position: "topleft"
+  },
+  onAdd: function () {
+    let el = L.DomUtil.create("div", "leaflet-bar leaflet-control");
+    let a = L.DomUtil.create("a", "leaflet-bar-part leaflet-bar-part-single", el);
+    a.textContent = "🔎";
+    a.href = "#";
+    a.setAttribute("role", "button");
+    a.style.fontSize = "1.1rem";
+
+    L.DomEvent.on(a, "click", function (ev) {
+      L.DomEvent.stopPropagation(ev);
+      L.DomEvent.preventDefault(ev);
+    });
+
+    return el;
+  }
+});
+let searchBtn = new SearchBtn({ position: "topleft" }).addTo(map);
+
+// File loader
 let FileLoader = L.Control.extend({
   options: {
     position: "topleft"
@@ -180,17 +204,24 @@ let paste = new Paste({ position: "topleft" }).addTo(map);
 let GridCoords = L.GridLayer.extend({
   createTile: function (coords) {
     const tile = document.createElement("div");
+    tile.classList.add("grid");
     tile.innerHTML = [coords.x, coords.y, coords.z].join(", ");
-    tile.style.outline = "1px solid #7baaf7";
-    tile.style.color = "#7baaf7";
-    tile.style.opacity = "0.7";
-    tile.style.fontSize = "1rem";
-    tile.style.display = "flex";
-    tile.style.justifyContent = "center";
-    tile.style.alignItems = "center";
     return tile;
   }
 });
 layerControl.addOverlay(new GridCoords(), "Grid cells");
+
+if (location.hash) {
+  let coords = location.hash.split(",");
+  let latitude = coords[0].slice(1);
+  let longitude = coords[1];
+  if (coords[2]) {
+    let scale = coords[2].split(/^(\d*)z$/g)[1];
+    map.setView([latitude, longitude], scale);
+  } else {
+    map.setView([latitude, longitude]);
+  };
+  L.marker([latitude, longitude]).bindPopup(`WGS84 coords: ${latitude}, ${longitude}`).addTo(map);
+};
 
 self.map = map;

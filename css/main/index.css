@@ -6,3 +6,12 @@ body {
   height: 100vh;
   width: 100vw;
 }
+.grid {
+  outline: 1px solid #7baaf7;
+  color: #7baaf7;
+  opacity: 0.7 !important;
+  font-size: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
