@@ -1,5 +1,6 @@
 "use strict";
 
+import {} from "./utm.js";
 import {} from "./hkgov-api.js";
 import {} from "../../libs/Leaflet.Coordinates@MrMufflon/Leaflet.Coordinates-0.1.5.min.js";
 // import {} from "../../libs/Leaflet.Locate@domoritz/L.Control.Locate.min.js";
@@ -65,6 +66,7 @@ const map = L.map("map", {
   zoomControl: false, // Move zoom control elsewhere
   layers: [baseMaps.OpenStreetMap],
   center: [22.35, 114.16],
+  worldCopyJump: true,
   zoom: 11
 });
 L.control.scale().addTo(map);
@@ -106,7 +108,8 @@ let clickMarker;
 map.on("click", (ev) => {
   if (clickMarker)
     clickMarker.removeFrom(map);
-  clickMarker = L.marker(ev.latlng).bindPopup(`WGS84 coords: ${ev.latlng.toString()}`).addTo(map);
+  let utm = latLngToUTM(ev.latlng.lat, ev.latlng.lng);
+  clickMarker = L.marker(ev.latlng).bindPopup(`WGS84 coords: ${ev.latlng.toString()}<br>UTM: ${utm[0]}${utm[1]} ${utm[2]} ${utm[3]}<br>MGRS: ${latLngToMGRS(ev.latlng.lat, ev.latlng.lng).join(" ")}`).addTo(map);
 });
 
 // Serach button
