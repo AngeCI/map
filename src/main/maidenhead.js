@@ -1,6 +1,6 @@
 "use strict";
 
-let latLngToMaidenHead = function (lat, lng) {
+let latLngToMaidenhead = function (lat, lng) {
   let mdhLng = Math.floor((lng + 180) / 20);
   let mdhLat = Math.floor((lat + 90) / 10);
 
@@ -23,5 +23,5 @@ let latLngToMaidenHead = function (lat, lng) {
 };
 
 export {
-  latLngToMaidenHead
+  latLngToMaidenhead
 };
