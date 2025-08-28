@@ -112,20 +112,37 @@ map.createPane("labels");
 map.getPane("labels").style.zIndex = 650;
 map.getPane("labels").style.pointerEvents = "none";
 
-let clickMarker;
-map.on("click", (ev) => {
-  if (clickMarker)
-    clickMarker.removeFrom(map);
-
+let locationMarker = function (map, lat, lng) {
+  let marker;
   let utm = latLngToUTM(ev.latlng.lat, ev.latlng.lng);
   let mgrs = latLngToMGRS(ev.latlng.lat, ev.latlng.lng);
+  mgrs[1] = mgrs[1].toString().padStart(5, "0");
   mgrs[2] = mgrs[2].toString().padStart(5, "0");
-  mgrs[3] = mgrs[3].toString().padStart(5, "0");
-
-  clickMarker = L.marker(ev.latlng).bindPopup(`WGS84 coords: ${ev.latlng.toString()}
+  let container = document.createElement("div");
+  container.innerHTML = `WGS84 coords: (${L.NumberFormatter.round(lat, 5)}, ${L.NumberFormatter.round(lng, 5)})
 <br>UTM: ${utm[0]}${utm[1]} ${utm[2]} ${utm[3]}
 <br>MGRS: ${mgrs.join(" ")}
-<br>Maidenhead: ${latLngToMaidenHead(ev.latlng.lat, ev.latlng.lng)}`).addTo(map);
+<br>Maidenhead: ${latLngToMaidenhead(lat, lng)}`;
+  container.appendChild(document.createElement("hr"));
+
+  let removeBtn = L.DomUtil.create("a", "", container);
+  removeBtn.innerHTML = "Remove";
+  removeBtn.href = "#";
+  L.DomEvent.on(removeBtn, "click", function (ev) {
+    L.DomEvent.stopPropagation(ev);
+    L.DomEvent.preventDefault(ev);
+    marker.removeFrom(map);
+  });
+  L.DomEvent.on(removeBtn, "mousedown", L.DomEvent.stopPropagation);
+  L.DomEvent.on(removeBtn, "doubleclick", L.DomEvent.stopPropagation);
+
+  marker = L.marker([lat, lng]).bindPopup(container);
+
+  return marker;
+};
+
+map.on("click", (ev) => {
+  locationMarker(map, ev.latlng.lat, ev.latlng.lng).addTo(map);
 });
 
 // Serach button
@@ -243,10 +260,7 @@ if (location.hash) {
   } else {
     map.setView([latitude, longitude]);
   };
-  L.marker([latitude, longitude]).bindPopup(`WGS84 coords: ${latitude}, ${longitude}
-<br>UTM: ${utm[0]}${utm[1]} ${utm[2]} ${utm[3]}
-<br>MGRS: ${latLngToMGRS(ev.latlng.lat, ev.latlng.lng).join(" ")}
-<br>Maidenhead: ${latLngToMaidenHead(ev.latlng.lat, ev.latlng.lng)}`).addTo(map);
+  locationMarker(map, latitude, longitude).addTo(map);
 };
 
 self.map = map;
