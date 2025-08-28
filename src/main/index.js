@@ -114,8 +114,8 @@ map.getPane("labels").style.pointerEvents = "none";
 
 let locationMarker = function (map, lat, lng) {
   let marker;
-  let utm = latLngToUTM(ev.latlng.lat, ev.latlng.lng);
-  let mgrs = latLngToMGRS(ev.latlng.lat, ev.latlng.lng);
+  let utm = latLngToUTM(lat, lng);
+  let mgrs = latLngToMGRS(lat, lng);
   mgrs[1] = mgrs[1].toString().padStart(5, "0");
   mgrs[2] = mgrs[2].toString().padStart(5, "0");
   let container = document.createElement("div");
