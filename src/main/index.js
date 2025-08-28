@@ -1,7 +1,7 @@
 "use strict";
 
 import {latLngToUTM, latLngToMGRS} from "./utm.js";
-import {latLngToMaidenHead} from "./maidenhead.js"
+import {latLngToMaidenhead} from "./maidenhead.js"
 import {} from "./hkgov-api.js";
 import {} from "../../libs/Leaflet.Coordinates@MrMufflon/Leaflet.Coordinates-0.1.5.min.js";
 // import {} from "../../libs/Leaflet.Locate@domoritz/L.Control.Locate.min.js";
