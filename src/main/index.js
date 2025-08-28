@@ -4,6 +4,7 @@ import {latLngToUTM, latLngToMGRS} from "./utm.js";
 import {latLngToMaidenhead} from "./maidenhead.js"
 import {} from "./hkgov-api.js";
 import {} from "../../libs/Leaflet.Coordinates@MrMufflon/Leaflet.Coordinates-0.1.5.min.js";
+import {} from "../../libs/Leaflet.ImageOverlay.Rotated@IvanSanchez/Leaflet.ImageOverlay.Rotated.min.js";
 // import {} from "../../libs/Leaflet.Locate@domoritz/L.Control.Locate.min.js";
 
 // Base map source definitions
@@ -195,6 +196,7 @@ let FileLoader = L.Control.extend({
     L.DomEvent.on(input, "input", async function (ev) {
       let file = ev.target.files[0];
       layerControl.addOverlay(L.geoJson(JSON.parse(await file.text())), file.name);
+      layerControl.getContainer().children[1].children[2].querySelector("label:last-child input").click();
 
       self.file = file;
     });
@@ -227,7 +229,26 @@ let Paste = L.Control.extend({
         };
         let url = URL.createObjectURL(await item.getType("image/png"));
         console.debug(url);
-        layerControl.addOverlay(L.imageOverlay(url, map.getBounds(), { opacity: 0.5 }), "Clipboard item");
+        let imageOverlay = L.imageOverlay.rotated(url, map.getBounds().getNorthWest(), map.getBounds().getNorthEast(), map.getBounds().getSouthWest(), {
+          opacity: 0.5,
+          interactive: true
+        });
+
+        let marker1 = L.marker(map.getBounds().getNorthWest(), { draggable: true });
+        let marker2 = L.marker(map.getBounds().getNorthEast(), { draggable: true });
+        let marker3 = L.marker(map.getBounds().getSouthWest(), { draggable: true });
+        let marker4 = L.marker(map.getBounds().getSouthEast(), { draggable: true });
+
+        let repositionImage = function () {
+          imageOverlay.reposition(marker1.getLatLng(), marker2.getLatLng(), marker3.getLatLng());
+        };
+
+        marker1.on("drag dragend", repositionImage);
+        marker2.on("drag dragend", repositionImage);
+        marker3.on("drag dragend", repositionImage);
+
+        layerControl.addOverlay(L.layerGroup([imageOverlay, marker1, marker2, marker3, marker4]), "Clipboard item");
+        layerControl.getContainer().children[1].children[2].querySelector("label:last-child input").click();
         break;
       }
     });
