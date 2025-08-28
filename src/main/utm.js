@@ -19,12 +19,11 @@ let latLngToUTM = function (lat, lng) {
   lat *= 0.017453292519943295; // convert to radian
   let deltaLng = (lng - utmLng * 6 + 183) * 0.017453292519943295;
   let originNorthing = lat >= 0 ? 0 : 10000000;
-  let m = (0.9983243043123051 * lat - 0.0025145938766232847 * Math.sin(lat * 2) + 0.0000026258627022822934 * Math.sin(lat * 4)) * 6378137; // meridian distance
+  let m = (0.9983243043123051 * lat - 0.0025145938766232847 * Math.sin(lat * 2) + 0.0000026258627022822934 * Math.sin(lat * 4)) * 6378137; // meridian distance to equator
 
   return [
     utmLng,
     String.fromCharCode(utmLat),
-    // Math.floor(500000 + (deltaLng * Math.cos(lat) + 1062597.6242 * deltaLng * deltaLng * deltaLng * (Math.cos(lat) ** 3) * (1.0057682211010657 - Math.tan(lat) ** 2))),
     Math.floor(500000 + (deltaLng * Math.cos(lat) + deltaLng * deltaLng * deltaLng * (Math.cos(lat) ** 3) / 6 * (1.0057682211010657 - Math.tan(lat) ** 2)) * 6378663.4706172),
     Math.floor(originNorthing + (m + 1594665.8676543 * deltaLng * deltaLng * Math.sin(2 * lat)) * 0.9996)
   ];

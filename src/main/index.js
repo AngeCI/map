@@ -1,6 +1,7 @@
 "use strict";
 
-import {} from "./utm.js";
+import {latLngToUTM, latLngToMGRS} from "./utm.js";
+import {latLngToMaidenHead} from "./maidenhead.js"
 import {} from "./hkgov-api.js";
 import {} from "../../libs/Leaflet.Coordinates@MrMufflon/Leaflet.Coordinates-0.1.5.min.js";
 // import {} from "../../libs/Leaflet.Locate@domoritz/L.Control.Locate.min.js";
@@ -8,52 +9,59 @@ import {} from "../../libs/Leaflet.Coordinates@MrMufflon/Leaflet.Coordinates-0.1
 // Base map source definitions
 const baseMaps = {
   "OpenStreetMap": L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
+    maxNativeZoom: 19,
+    maxZoom: 21,
     attribution: '© <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
   }),
   "CartoDB (light)": L.tileLayer("https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png", {
-    maxZoom: 30,
+    maxZoom: 29,
     attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, © <a href="https://carto.com/attribution">CARTO</a>'
   }),
   "CartoDB (dark)": L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png", {
-    maxZoom: 30,
+    maxZoom: 29,
     attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, © <a href="https://carto.com/attribution">CARTO</a>'
   }),
   "HK Lands Dept Topo": L.tileLayer.hkGov("basemap", "basemap", {
-    maxZoom: 20,
+    maxNativeZoom: 20,
+    maxZoom: 21,
+    minZoom: 10,
     attribution: '© <a href="https://api.portal.hkmapservice.gov.hk/disclaimer">Lands Department <img src="https://api.hkmapservice.gov.hk/mapapi/landsdlogo.jpg" width="25" height="25" /></a>'
   }),
   "HK Lands Dept Aerial": L.tileLayer.hkGov("basemap", "imagery", {
-    maxZoom: 19,
+    maxNativeZoom: 19,
+    maxZoom: 21,
     attribution: '© <a href="https://api.portal.hkmapservice.gov.hk/disclaimer">Lands Department <img src="https://api.hkmapservice.gov.hk/mapapi/landsdlogo.jpg" width="25" height="25" /></a>'
   })
 };
 
 const labelMaps = {
   "CartoDB (light)": L.tileLayer("https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png", {
-    maxZoom: 30,
+    maxZoom: 29,
     attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, © <a href="https://carto.com/attribution">CARTO</a>',
     pane: "labels"
   }),
   "CartoDB (dark)": L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}.png", {
-    maxZoom: 30,
+    maxZoom: 29,
     attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, © <a href="https://carto.com/attribution">CARTO</a>',
     pane: "labels"
   }),
   "HK Lands Dept (English)": L.tileLayer.hkGov("label", "en", {
-    maxZoom: 20,
+    maxNativeZoom: 20,
+    maxZoom: 21,
     minZoom: 10,
     attribution: '© <a href="https://api.portal.hkmapservice.gov.hk/disclaimer">Lands Department <img src="https://api.hkmapservice.gov.hk/mapapi/landsdlogo.jpg" width="25" height="25" /></a>',
     pane: "labels"
   }),
   "HK Lands Dept (Traditional Chinese)": L.tileLayer.hkGov("label", "tc", {
-    maxZoom: 20,
+    maxNativeZoom: 20,
+    maxZoom: 21,
     minZoom: 10,
     attribution: '© <a href="https://api.portal.hkmapservice.gov.hk/disclaimer">Lands Department <img src="https://api.hkmapservice.gov.hk/mapapi/landsdlogo.jpg" width="25" height="25" /></a>',
     pane: "labels"
   }),
   "HK Lands Dept (Simplified Chinese)": L.tileLayer.hkGov("label", "sc", {
-    maxZoom: 20,
+    maxNativeZoom: 20,
+    maxZoom: 21,
     minZoom: 10,
     attribution: '© <a href="https://api.portal.hkmapservice.gov.hk/disclaimer">Lands Department <img src="https://api.hkmapservice.gov.hk/mapapi/landsdlogo.jpg" width="25" height="25" /></a>',
     pane: "labels"
@@ -109,7 +117,10 @@ map.on("click", (ev) => {
   if (clickMarker)
     clickMarker.removeFrom(map);
   let utm = latLngToUTM(ev.latlng.lat, ev.latlng.lng);
-  clickMarker = L.marker(ev.latlng).bindPopup(`WGS84 coords: ${ev.latlng.toString()}<br>UTM: ${utm[0]}${utm[1]} ${utm[2]} ${utm[3]}<br>MGRS: ${latLngToMGRS(ev.latlng.lat, ev.latlng.lng).join(" ")}`).addTo(map);
+  clickMarker = L.marker(ev.latlng).bindPopup(`WGS84 coords: ${ev.latlng.toString()}
+<br>UTM: ${utm[0]}${utm[1]} ${utm[2]} ${utm[3]}
+<br>MGRS: ${latLngToMGRS(ev.latlng.lat, ev.latlng.lng).join(" ")}
+<br>Maidenhead: ${latLngToMaidenHead(ev.latlng.lat, ev.latlng.lng)}`).addTo(map);
 });
 
 // Serach button
@@ -205,6 +216,9 @@ let Paste = L.Control.extend({
 let paste = new Paste({ position: "topleft" }).addTo(map);
 
 let GridCoords = L.GridLayer.extend({
+  options: {
+    opacity: 0.7
+  },
   createTile: function (coords) {
     const tile = document.createElement("div");
     tile.classList.add("grid");
@@ -224,7 +238,10 @@ if (location.hash) {
   } else {
     map.setView([latitude, longitude]);
   };
-  L.marker([latitude, longitude]).bindPopup(`WGS84 coords: ${latitude}, ${longitude}`).addTo(map);
+  L.marker([latitude, longitude]).bindPopup(`WGS84 coords: ${latitude}, ${longitude}
+<br>UTM: ${utm[0]}${utm[1]} ${utm[2]} ${utm[3]}
+<br>MGRS: ${latLngToMGRS(ev.latlng.lat, ev.latlng.lng).join(" ")}
+<br>Maidenhead: ${latLngToMaidenHead(ev.latlng.lat, ev.latlng.lng)}`).addTo(map);
 };
 
 self.map = map;
