@@ -241,11 +241,22 @@ let Paste = L.Control.extend({
 
         let repositionImage = function () {
           imageOverlay.reposition(marker1.getLatLng(), marker2.getLatLng(), marker3.getLatLng());
+          marker4.setLatLng([
+            marker2.getLatLng().lat + marker3.getLatLng().lat - marker1.getLatLng().lat,
+            marker2.getLatLng().lng + marker3.getLatLng().lng - marker1.getLatLng().lng
+          ]);
         };
 
         marker1.on("drag dragend", repositionImage);
         marker2.on("drag dragend", repositionImage);
         marker3.on("drag dragend", repositionImage);
+        marker4.on("drag dragend", () => {
+          marker1.setLatLng([
+            marker2.getLatLng().lat + marker3.getLatLng().lat - marker4.getLatLng().lat,
+            marker2.getLatLng().lng + marker3.getLatLng().lng - marker4.getLatLng().lng
+          ]);
+          repositionImage();
+        });
 
         layerControl.addOverlay(L.layerGroup([imageOverlay, marker1, marker2, marker3, marker4]), "Clipboard item");
         layerControl.getContainer().children[1].children[2].querySelector("label:last-child input").click();
