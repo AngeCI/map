@@ -7,7 +7,7 @@ let latLngToMaidenHead = function (lat, lng) {
   let remainderLng = lng + 180 - mdhLng * 20;
 
   let mdhLngSquare = remainderLng >> 1;
-  let mdhLatSquare = lat + 90 - mdhLat * 10;
+  let mdhLatSquare = Math.floor(lat + 90 - mdhLat * 10);
 
   remainderLng -= mdhLngSquare << 1;
 

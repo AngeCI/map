@@ -116,10 +116,15 @@ let clickMarker;
 map.on("click", (ev) => {
   if (clickMarker)
     clickMarker.removeFrom(map);
+
   let utm = latLngToUTM(ev.latlng.lat, ev.latlng.lng);
+  let mgrs = latLngToMGRS(ev.latlng.lat, ev.latlng.lng);
+  mgrs[2] = mgrs[2].toString().padStart(5, "0");
+  mgrs[3] = mgrs[3].toString().padStart(5, "0");
+
   clickMarker = L.marker(ev.latlng).bindPopup(`WGS84 coords: ${ev.latlng.toString()}
 <br>UTM: ${utm[0]}${utm[1]} ${utm[2]} ${utm[3]}
-<br>MGRS: ${latLngToMGRS(ev.latlng.lat, ev.latlng.lng).join(" ")}
+<br>MGRS: ${mgrs.join(" ")}
 <br>Maidenhead: ${latLngToMaidenHead(ev.latlng.lat, ev.latlng.lng)}`).addTo(map);
 });
 
