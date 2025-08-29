@@ -126,6 +126,17 @@ let locationMarker = function (map, lat, lng) {
 <br>Maidenhead: ${latLngToMaidenhead(lat, lng)}`;
   container.appendChild(document.createElement("hr"));
 
+  let copyBtn = L.DomUtil.create("a", "", container);
+  copyBtn.innerHTML = "Copy link";
+  copyBtn.href = "#";
+  L.DomEvent.on(copyBtn, "click", function (ev) {
+    L.DomEvent.stopPropagation(ev);
+    L.DomEvent.preventDefault(ev);
+    navigator.clipboard.writeText(`${location.href}#${lat},${lng},${map.getZoom()}z`);
+  });
+
+  container.appendChild(document.createTextNode(" · "));
+
   let removeBtn = L.DomUtil.create("a", "", container);
   removeBtn.innerHTML = "Remove";
   removeBtn.href = "#";
