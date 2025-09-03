@@ -32,6 +32,21 @@ const baseMaps = {
     maxNativeZoom: 19,
     maxZoom: 21,
     attribution: '© <a href="https://api.portal.hkmapservice.gov.hk/disclaimer">Lands Department <img src="https://api.hkmapservice.gov.hk/mapapi/landsdlogo.jpg" width="25" height="25" /></a>'
+  }),
+  "OpenFreeMap Liberty": L.maplibreGL({
+    style: "https://tiles.openfreemap.org/styles/liberty",
+    maxZoom: 21,
+    attribution: '© <a href="https://openfreemap.org">OpenFreeMap</a>'
+  }),
+  "OpenFreeMap Positron": L.maplibreGL({
+    style: "https://tiles.openfreemap.org/styles/positron",
+    maxZoom: 21,
+    attribution: '© <a href="https://openfreemap.org">OpenFreeMap</a>'
+  }),
+  "OpenFreeMap Bright": L.maplibreGL({
+    style: "https://tiles.openfreemap.org/styles/bright",
+    maxZoom: 21,
+    attribution: '© <a href="https://openfreemap.org">OpenFreeMap</a>'
   })
 };
 
@@ -279,6 +294,28 @@ let Paste = L.Control.extend({
   }
 });
 let paste = new Paste({ position: "topleft" }).addTo(map);
+
+let Projection = L.Control.extend({
+  options: {
+    position: "topleft"
+  },
+  onAdd: function () {
+    let el = L.DomUtil.create("div", "leaflet-bar leaflet-control");
+    let a = L.DomUtil.create("a", "leaflet-bar-part leaflet-bar-part-single", el);
+    a.textContent = "🗺️";
+    a.href = "#";
+    a.setAttribute("role", "button");
+    a.style.fontSize = "1.1rem";
+
+    L.DomEvent.on(a, "click", function (ev) {
+      L.DomEvent.stopPropagation(ev);
+      L.DomEvent.preventDefault(ev);
+    });
+
+    return el;
+  }
+});
+let projection = new Projection().addTo(map);
 
 let GridCoords = L.GridLayer.extend({
   options: {
