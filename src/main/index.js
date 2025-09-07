@@ -2,6 +2,7 @@
 
 import {latLngToUTM, latLngToMGRS} from "./utm.js";
 import {latLngToMaidenhead} from "./maidenhead.js"
+import {latLngToHK1980} from "./hk1980.js";
 import {} from "./hkgov-api.js";
 import {} from "../../libs/Leaflet.Coordinates@MrMufflon/Leaflet.Coordinates-0.1.5.min.js";
 import {} from "../../libs/Leaflet.ImageOverlay.Rotated@IvanSanchez/Leaflet.ImageOverlay.Rotated.min.js";
@@ -139,10 +140,22 @@ let locationMarker = function (map, lat, lng) {
 <br>UTM: ${utm[0]}${utm[1]} ${utm[2]} ${utm[3]}
 <br>MGRS: ${mgrs.join(" ")}
 <br>Maidenhead: ${latLngToMaidenhead(lat, lng)}`;
+  if (L.latLngBounds([[22.13, 113.82], [22.57, 114.5]]).contains([lat, lng])) {
+    let hk1980GridCoord = latLngToHK1980(lat, lng);
+    container.innerHTML += `<br>HK1980 grid coords: ${hk1980GridCoord[1]}mN ${hk1980GridCoord[0]}mE`;
+  };
+
+  container.appendChild(document.createElement("hr"));
+
+  let glMapBtn = L.DomUtil.create("a", "", container);
+  glMapBtn.textContent = "Google Map";
+  glMapBtn.href = `https://www.google.com/maps/@${L.NumberFormatter.round(lat, 5)},${L.NumberFormatter.round(lng, 5)},${map.getZoom()}z`;
+  glMapBtn.target = "_blank";
+
   container.appendChild(document.createElement("hr"));
 
   let copyBtn = L.DomUtil.create("a", "", container);
-  copyBtn.innerHTML = "Copy link";
+  copyBtn.textContent = "Copy link";
   copyBtn.href = "#";
   L.DomEvent.on(copyBtn, "click", function (ev) {
     L.DomEvent.stopPropagation(ev);
@@ -153,7 +166,7 @@ let locationMarker = function (map, lat, lng) {
   container.appendChild(document.createTextNode(" · "));
 
   let removeBtn = L.DomUtil.create("a", "", container);
-  removeBtn.innerHTML = "Remove";
+  removeBtn.textContent = "Remove";
   removeBtn.href = "#";
   L.DomEvent.on(removeBtn, "click", function (ev) {
     L.DomEvent.stopPropagation(ev);
@@ -169,7 +182,7 @@ let locationMarker = function (map, lat, lng) {
 };
 
 map.on("click", (ev) => {
-  locationMarker(map, ev.latlng.lat, ev.latlng.lng).addTo(map);
+  locationMarker(map, ev.latlng.lat, ev.latlng.lng).addTo(map).openPopup();
 });
 
 // Serach button
@@ -340,7 +353,8 @@ if (location.hash) {
   } else {
     map.setView([latitude, longitude]);
   };
-  locationMarker(map, latitude, longitude).addTo(map);
+  locationMarker(map, latitude, longitude).addTo(map).openPopup();
 };
 
 self.map = map;
+self.locationMarker = locationMarker;

@@ -8,12 +8,19 @@ let latLngToUTM = function (lat, lng) {
   } else if (lat > 84) { // North polar region
     return lng < 0 ? "Y" : "Z";
   } else {
-    utmLng = Math.floor((lng + 180) / 6) + 1;
-    utmLat = (lat + 80) / 8 + 67;
-    if (utmLat > 72) // Skip the letter “I”
-      utmLat++;
-    if (utmLat > 79) // Skip the letter “O”
-      utmLat++;
+    utmLng = Math.floor((lng + 186) / 6);
+    utmLat = (lat + 616) / 8;
+    if (utmLat >= 73) // Skip the letter “I”
+      utmLatLetter++;
+    if (utmLatLetter >= 79) // Skip the letter “O”
+      utmLatLetter++;
+    if (utmLatLetter >= 89) // 80°-84° N becomes “X”
+      utmLatLetter--;
+
+    if (Math.floor(utmLatLetter) == 86 && lng >= 3 && lng < 12) // 32V exception
+      utmLng = 32;
+    if (Math.floor(utmLatLetter) == 88 && lng >= 0 && lng < 42 && utmLng & 1 == 0) // 31X-37X exceptions
+      utmLng = ((lng + 3) / 12 << 1) + 31;
   };
 
   lat *= 0.017453292519943295; // convert to radian
