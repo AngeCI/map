@@ -154,7 +154,7 @@ let locationMarker = function (map, lat, lng) {
 
   let glMapBtn = L.DomUtil.create("a", "", container);
   glMapBtn.textContent = "Google Map";
-  glMapBtn.href = `https://www.google.com/maps?q=${truncatedLat},${truncatedLng}&z={map.getZoom()}`;
+  glMapBtn.href = `https://www.google.com/maps?q=${truncatedLat},${truncatedLng}&z=${map.getZoom()}`;
   glMapBtn.target = "_blank";
 
   container.appendChild(document.createTextNode(" · "));
@@ -385,10 +385,10 @@ layerControl.addOverlay(new GridCoords(), "Grid cells");
 
 if (location.hash) {
   let coords = location.hash.split(",");
-  let latitude = coords[0].slice(1);
-  let longitude = coords[1];
+  let latitude = parseInt(coords[0].slice(1));
+  let longitude = parseInt(coords[1]);
   if (coords[2]) {
-    let scale = coords[2].split(/^(\d*)z$/g)[1];
+    let scale = parseInt(coords[2].split(/^(\d*)z$/g)[1]);
     map.setView([latitude, longitude], scale);
   } else {
     map.setView([latitude, longitude]);
