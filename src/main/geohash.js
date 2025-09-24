@@ -1,5 +1,7 @@
 "use strict";
 
+const letterTable = "0123456789bcdefghjkmnpqrstuvwxyz";
+
 let interleave = function (x, y) {
   x = (x | (x << 8)) & 0x00ff00ff;
   x = (x | (x << 4)) & 0x0f0f0f0f;
@@ -13,15 +15,18 @@ let interleave = function (x, y) {
 };
 
 let latLngToGeohash = function (lat, lng) {
-  const letterTable = "0123456789bcdefghjkmnpqrstuvwxyz";
-  let x = Math.floor((lng + 180) % 360 * 182.04444444444444);
-  let y = Math.floor((lat + 90) * 364.0888888888889);
-  let c = interleave(x, y);
+  const x = (lng + 180) % 360 * 11930464.711111111;
+  const y = (lat + 90) * 23860929.422222222;
+  const c1 = interleave(x >>> 17, y >>> 17), c2 = interleave((x >>> 2) & 0x7fff, (y >>> 2) & 0x7fff);
 
   let str = [];
 
-  for (let i = 0; i < 5; i++) {
-    let letter = (c >> (27 - 5 * i)) & 0x1f;
+  for (let i = 0; i < 6; i++) {
+    let letter = (c1 >> (25 - 5 * i)) & 0x1f;
+    str[i] = letterTable[letter];
+  };
+  for (let i = 6; i < 8; i++) { // Theoretically can go to 12, but it’s too precise.
+    let letter = (c2 >> (55 - 5 * i)) & 0x1f;
     str[i] = letterTable[letter];
   };
 
