@@ -1,7 +1,7 @@
 "use strict";
 
 /**
- * proj4.defs("EPSG:2326", "+proj=tmerc +lat_0=22.312133333333333 +lon_0=114.17855555555556 +x_0=836694.05 +y_0=819069.8 +ellps=intl +units=m");
+ * proj4.defs("EPSG:2326", "+proj=tmerc +lat_0=22.310605555555555 +lon_0=114.181 +x_0=836694.05 +y_0=819069.8 +ellps=intl +units=m");
  */
 
 let latLngToHK1980 = function (lat, lng) {
@@ -41,7 +41,7 @@ let meridianDistanceReverse = function (M) {
   throw new Error();
 };
 
-let hk1980ToLatLng = function (n, e) {
+let hk1980ToLatLng = function (e, n) {
   let de = e - 836694.05;
   let M = n + 1649325.9281846893;
   let fr = meridianDistanceReverse(M);
@@ -50,10 +50,11 @@ let hk1980ToLatLng = function (n, e) {
   let rr = 6378388 * (1 - 0.006722670022333322) / (1 - 0.006722670022333322 * Math.sin(fr) ** 2) ** 1.5;
   let ur = 6378388 / Math.sqrt(1 - 0.006722670022333322 * Math.sin(fr) ** 2);
   let psir = ur / rr;
+  let d = de / ur;
 
   return [
-    (114.17855555555556 + de / ur / Math.cos(fr) - de * de * de / 6 / ur ** 3 / Math.cos(fr) * (psir + 2 * Math.tan(fr) ** 2)) * 57.29577951308232 - 0.0015277777777777778,
-    (fr - 0.5 * Math.tan(fr) * de * de / rr / ur) * 57.29577951308232 + 0.002444444444444445
+    (1.9927917296157078 + d / Math.cos(fr) - d ** 3 / 6 / Math.cos(fr) * (psir + 2 * Math.tan(fr) ** 2)) * 57.29577951308232 - 0.0015277777777777778,
+    (fr - 0.5 * Math.tan(fr) * d * de / rr) * 57.29577951308232 + 0.002444444444444445
   ];
 };
 

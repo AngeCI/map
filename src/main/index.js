@@ -3,6 +3,8 @@
 import {latLngToUTM, latLngToMGRS} from "./utm.js";
 import {latLngToMaidenhead} from "./maidenhead.js"
 import {latLngToHK1980} from "./hk1980.js";
+import {latLngToOsmShortUrl} from "./osmShortUrl.js";
+import {latLngToGeohash} from "./geohash.js";
 import {} from "./hkgov-api.js";
 import {} from "../../libs/Leaflet.Coordinates@MrMufflon/Leaflet.Coordinates-0.1.5.min.js";
 import {} from "../../libs/Leaflet.ImageOverlay.Rotated@IvanSanchez/Leaflet.ImageOverlay.Rotated.min.js";
@@ -135,11 +137,14 @@ let locationMarker = function (map, lat, lng) {
   let mgrs = latLngToMGRS(lat, lng);
   mgrs[1] = mgrs[1].toString().padStart(5, "0");
   mgrs[2] = mgrs[2].toString().padStart(5, "0");
+  let truncatedLat = L.NumberFormatter.round(lat, 5), truncatedLng = L.NumberFormatter.round(lng, 5);
+
   let container = document.createElement("div");
-  container.innerHTML = `WGS84 coords: (${L.NumberFormatter.round(lat, 5)}, ${L.NumberFormatter.round(lng, 5)})
+  container.innerHTML = `WGS84 coords: (${truncatedLat}, ${truncatedLng})
 <br>UTM: ${utm[0]}${utm[1]} ${utm[2]} ${utm[3]}
 <br>MGRS: ${mgrs.join(" ")}
-<br>Maidenhead: ${latLngToMaidenhead(lat, lng)}`;
+<br>Maidenhead: ${latLngToMaidenhead(lat, lng)}
+<br>Geohash: ${latLngToGeohash(lat, lng)}`;
   if (L.latLngBounds([[22.13, 113.82], [22.57, 114.5]]).contains([lat, lng])) {
     let hk1980GridCoord = latLngToHK1980(lat, lng);
     container.innerHTML += `<br>HK1980 grid coords: ${hk1980GridCoord[1]}mN ${hk1980GridCoord[0]}mE`;
@@ -149,8 +154,22 @@ let locationMarker = function (map, lat, lng) {
 
   let glMapBtn = L.DomUtil.create("a", "", container);
   glMapBtn.textContent = "Google Map";
-  glMapBtn.href = `https://www.google.com/maps/@${L.NumberFormatter.round(lat, 5)},${L.NumberFormatter.round(lng, 5)},${map.getZoom()}z`;
+  glMapBtn.href = `https://www.google.com/maps?q=${truncatedLat},${truncatedLng}&z={map.getZoom()}`;
   glMapBtn.target = "_blank";
+
+  container.appendChild(document.createTextNode(" · "));
+
+  let streetViewBtn = L.DomUtil.create("a", "", container);
+  streetViewBtn.textContent = "Nearest street view";
+  streetViewBtn.href = `https://www.google.com/maps?q=${truncatedLat},${truncatedLng}&z=${map.getZoom()}&layer=c&cbll=${truncatedLat},${truncatedLng}`;
+  streetViewBtn.target = "_blank";
+
+  container.appendChild(document.createTextNode(" · "));
+
+  let osmBtn = L.DomUtil.create("a", "", container);
+  osmBtn.textContent = "OpenStreetMap";
+  osmBtn.href = `https://osm.org/go/${latLngToOsmShortUrl(lat, lng, map.getZoom())}?m`;
+  osmBtn.target = "_blank";
 
   container.appendChild(document.createElement("hr"));
 
@@ -160,7 +179,7 @@ let locationMarker = function (map, lat, lng) {
   L.DomEvent.on(copyBtn, "click", function (ev) {
     L.DomEvent.stopPropagation(ev);
     L.DomEvent.preventDefault(ev);
-    navigator.clipboard.writeText(`${location.href}#${lat},${lng},${map.getZoom()}z`);
+    navigator.clipboard.writeText(`${location.href}#${truncatedLat},${truncatedLng},${map.getZoom()}z`);
   });
 
   container.appendChild(document.createTextNode(" · "));
@@ -231,6 +250,8 @@ let FileLoader = L.Control.extend({
       L.DomEvent.preventDefault(ev);
       input.click();
     });
+
+    L.DomEvent.on(input, "click", L.DomEvent.stopPropagation);
 
     L.DomEvent.on(input, "input", async function (ev) {
       let file = ev.target.files[0];
@@ -329,6 +350,25 @@ let Projection = L.Control.extend({
   }
 });
 let projection = new Projection().addTo(map);
+
+let ViewSource = L.Control.extend({
+  options: {
+    position: "bottomleft"
+  },
+  onAdd: function () {
+    let el = L.DomUtil.create("div", "leaflet-bar leaflet-control");
+    let a = L.DomUtil.create("a", "leaflet-bar-part leaflet-bar-part-single", el);
+    a.href = "https://github.com/AngeCI/map";
+    a.target = "_blank";
+    a.setAttribute("role", "button");
+    a.style.fontSize = "1.1rem";
+
+    L.DomEvent.on(a, "click", L.DomEvent.stopPropagation);
+
+    return el;
+  }
+});
+let viewSource = new ViewSource().addTo(map);
 
 let GridCoords = L.GridLayer.extend({
   options: {
