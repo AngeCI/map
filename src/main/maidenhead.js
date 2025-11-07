@@ -1,8 +1,8 @@
 "use strict";
 
 let latLngToMaidenhead = function (lat, lng) {
-  let mdhLng = Math.floor((lng + 180) / 20);
-  let mdhLat = Math.floor((lat + 90) / 10);
+  let mdhLng = (lng + 180) * 52429 >>> 20; // Math.floor((lng + 180) / 20)
+  let mdhLat = (lat + 90) * 52429 >>> 19; // Math.floor((lat + 90) / 10)
 
   let remainderLng = lng + 180 - mdhLng * 20;
 

@@ -43,9 +43,15 @@ let osmShortUrlToLatLng = function (str) {
 
   let x = 0, y = 0, z = -8;
 
-  Array.from(str).forEach((c) => {
+  Array.from(str).forEach((c, i) => {
     let t = letterTable.indexOf(c);
-    if (t == -1) return;
+    if (t == -1) {
+	  if (c == "-") {
+		z -= 2;
+	  } else {
+		return;
+	  };
+	};
     x <<= 3;
     y <<= 3;
     for (let j = 2; j >= 0; j--) {
@@ -54,9 +60,6 @@ let osmShortUrlToLatLng = function (str) {
     };
     z += 3;
   });
-
-  x <<= (32 - z);
-  y <<= (32 - z);
 
   return [
     y * 4.190951585769653e-8 - 90,
