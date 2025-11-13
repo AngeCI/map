@@ -40,14 +40,14 @@ let latLngToMGRS = function (lat, lng) {
   let utm = latLngToUTM(lat, lng);
   let e = utm[2];
   let n = utm[3];
-  let eCycle = (utm[0] - 1) % 3;
+  let eCycle = ((utm[0] - 1) * 43691 & 0x1ffff) * 3 >>> 17; // (utm[0] - 1) % 3
   let nCycle = !(utm[0] & 1);
 
-  let millionE = Math.floor((e / 100000 + eCycle * 9) % 26 + 64);
+  let millionE = (((e / 100000 + eCycle * 9) * 40329 & 0xfffff) * 26 >>> 20) + 64; // Math.floor((e / 100000 + eCycle * 9) % 26 + 64)
   if (eCycle == 1 && millionE > 78) // Skip the letter “O”
     millionE++;
 
-  let millionN = Math.floor((n / 100000 + nCycle * 5) % 20 + 65);
+  let millionN = (((n / 100000 + nCycle * 5) * 52429 & 0xfffff) * 20 >>> 20) + 65; // Math.floor((n / 100000 + nCycle * 5) % 20 + 65)
   if (millionN > 72) // Skip the letter “I”
     millionN++;
   if (millionN > 78) // Skip the letter “O”

@@ -16,8 +16,8 @@ let latLngToMaidenhead = function (lat, lng) {
   if (mdhLatSubsquare < 0)
     mdhLatSubsquare++;
 
-  let mdhLngSubsubsquare = Math.floor((mdhLngSubsquare * 10) % 10);
-  let mdhLatSubsubsquare = Math.floor((mdhLatSubsquare * 10) % 10);
+  let mdhLngSubsubsquare = (mdhLngSubsquare * 524290 & 0x7ffff) * 10 >>> 19; // Math.floor((mdhLngSubsquare * 10) % 10)
+  let mdhLatSubsubsquare = (mdhLatSubsquare * 524290 & 0x7ffff) * 10 >>> 19; // Math.floor((mdhLatSubsquare * 10) % 10)
 
   return `${String.fromCharCode(mdhLng + 65, mdhLat + 65)}${mdhLngSquare}${mdhLatSquare}${String.fromCharCode(mdhLngSubsquare + 97, mdhLatSubsquare + 97)}${mdhLngSubsubsquare}${mdhLatSubsubsquare}`;
 };

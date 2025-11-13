@@ -20,7 +20,7 @@ let latLngToOsmShortUrl = function (lat, lng, zoom) {
   let c1 = interleave(x >>> 17, y >>> 17), c2 = interleave((x >>> 2) & 0x7fff, (y >>> 2) & 0x7fff);
 
   const d = Math.ceil((zoom + 8) / 3);
-  const r = (zoom + 8) % 3;
+  const r = ((zoom + 8) * 43691 & 0x1ffff) * 3 >>> 17; // (zoom + 8) % 3
 
   let str = Array(d + r);
   if (r)
