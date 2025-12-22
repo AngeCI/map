@@ -1,13 +1,13 @@
 "use strict";
 
 /**
- * proj4.defs("EPSG:2326", "+proj=tmerc +lat_0=22.310605555555555 +lon_0=114.181 +x_0=836694.05 +y_0=819069.8 +ellps=intl +units=m");
+ * proj4.defs("EPSG:2326", "+proj=tmerc +lat_0=22.312133333333333 +lon_0=114.17855555555556 +x_0=836694.05 +y_0=819069.8 +ellps=intl +units=m +no_defs");
  */
 
 let latLngToHK1980 = function (lat, lng) {
   lat = (lat + 0.0015277777777777778) * 0.017453292519943295;
-  let deltaLng = (lng - 114.181) * 0.017453292519943295;
-  let m = (0.9983172140119684 * lat - 0.002525238223271481 * Math.sin(lat * 2) + 0.0000026481030603034634 * Math.sin(lat * 4)) * 6378388; // meridian distance to equator
+  const deltaLng = (lng - 114.181) * 0.017453292519943295;
+  const m = (0.9983172140119684 * lat - 0.002525238223271481 * Math.sin(lat * 2) + 0.0000026481030603034634 * Math.sin(lat * 4)) * 6378388; // meridian distance to equator
 
   return [
     Math.floor(836694.05 + (deltaLng * Math.cos(lat) + deltaLng * deltaLng * deltaLng / 6 * (Math.cos(lat) ** 3) * (1.0057926350989976 - Math.tan(lat) ** 2)) * 6381480.502),
@@ -16,7 +16,7 @@ let latLngToHK1980 = function (lat, lng) {
 };
 
 let meridianDistanceReverse = function (M) {
-  let R_target = M / 6378388;
+  const R_target = M / 6378388;
   let f = function (lat) {
     return (0.9983172140119684 * lat - 0.002525238223271481 * Math.sin(lat * 2) + 0.0000026481030603034634 * Math.sin(lat * 4)) - R_target;
   };
@@ -42,15 +42,15 @@ let meridianDistanceReverse = function (M) {
 };
 
 let hk1980ToLatLng = function (e, n) {
-  let de = e - 836694.05;
-  let M = n + 1649325.9281846893;
-  let fr = meridianDistanceReverse(M);
+  const de = e - 836694.05;
+  const M = n + 1649325.9281846893;
+  const fr = meridianDistanceReverse(M);
 
   // Use fr to calculate rr, ur, psir
-  let rr = 6378388 * (1 - 0.006722670022333322) / (1 - 0.006722670022333322 * Math.sin(fr) ** 2) ** 1.5;
-  let ur = 6378388 / Math.sqrt(1 - 0.006722670022333322 * Math.sin(fr) ** 2);
-  let psir = ur / rr;
-  let d = de / ur;
+  const rr = 6378388 * (1 - 0.006722670022333322) / (1 - 0.006722670022333322 * Math.sin(fr) ** 2) ** 1.5;
+  const ur = 6378388 / Math.sqrt(1 - 0.006722670022333322 * Math.sin(fr) ** 2);
+  const psir = ur / rr;
+  const d = de / ur;
 
   return [
     (1.9927917296157078 + d / Math.cos(fr) - d ** 3 / 6 / Math.cos(fr) * (psir + 2 * Math.tan(fr) ** 2)) * 57.29577951308232 - 0.0015277777777777778,

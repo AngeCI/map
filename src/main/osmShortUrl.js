@@ -15,9 +15,9 @@ let interleave = function (x, y) {
 };
 
 let latLngToOsmShortUrl = function (lat, lng, zoom) {
-  let x = (lng + 180) % 360 * 11930464.711111111;
-  let y = (lat + 90) * 23860929.422222222;
-  let c1 = interleave(x >>> 17, y >>> 17), c2 = interleave((x >>> 2) & 0x7fff, (y >>> 2) & 0x7fff);
+  const x = (lng + 180) % 360 * 11930464.711111111;
+  const y = (lat + 90) * 23860929.422222222;
+  const c1 = interleave(x >>> 17, y >>> 17), c2 = interleave((x >>> 2) & 0x7fff, (y >>> 2) & 0x7fff);
 
   const d = Math.ceil((zoom + 8) / 3);
   const r = ((zoom + 8) * 43691 & 0x1ffff) * 3 >>> 17; // (zoom + 8) % 3

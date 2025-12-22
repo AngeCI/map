@@ -33,6 +33,11 @@ let latLngToGeohash = function (lat, lng) {
   return str.join("");
 };
 
+let geohashToLatLng = function (str) {
+  // Todo
+};
+
 export {
-  latLngToGeohash
+  latLngToGeohash,
+  geohashToLatLng
 };

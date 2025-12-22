@@ -33,7 +33,7 @@ L.HKGov = {
 
 L.TileLayer.HKGov = L.TileLayer.extend({
   initialize: function(base, target = "", options) {
-    let metaData = L.HKGov;
+    const metaData = L.HKGov;
 
     // Assign defualt values if no second parameter is provided
     if (target == "") {
@@ -58,9 +58,9 @@ L.TileLayer.HKGov = L.TileLayer.extend({
       }
     }
 
-    let tileTarget = metaData[base][target];
-    let url = `${metaData.urlBase}${tileTarget.path}/${metaData.crs.wgs84}/{z}/{x}/{y}.png`;
-    let defaultOpts = {
+    const tileTarget = metaData[base][target];
+    const url = `${metaData.urlBase}${tileTarget.path}/${metaData.crs.wgs84}/{z}/{x}/{y}.png`;
+    const defaultOpts = {
       maxZoom: tileTarget.maxZoom,
     };
     L.setOptions(this, defaultOpts);
@@ -70,7 +70,7 @@ L.TileLayer.HKGov = L.TileLayer.extend({
 
 L.LayerGroup.HKGov = L.LayerGroup.extend({
   initialize: function(base, label = "tc", options) {
-    let metaData = L.HKGov;
+    const metaData = L.HKGov;
 
     if (!(base in metaData.basemap)) {
       throw `Unknown basemap type "${base}"`;
@@ -82,11 +82,11 @@ L.LayerGroup.HKGov = L.LayerGroup.extend({
     this._basemapLayer = L.tileLayer.hkGov("basemap", base);
     this._labelLayer = L.tileLayer.hkGov("label", label);
 
-    let myLayers = [this._basemapLayer, this._labelLayer];
+    const myLayers = [this._basemapLayer, this._labelLayer];
     L.LayerGroup.prototype.initialize.call(this, myLayers, options);
   },
   language: function(language) {
-    let metaData = L.HKGov;
+    const metaData = L.HKGov;
     if (!(language in metaData.label)) {
       throw `Unsupported label language "${language}"`;
     }

@@ -1,10 +1,10 @@
 "use strict";
 
-import {latLngToUTM, latLngToMGRS} from "./utm.js";
-import {latLngToMaidenhead} from "./maidenhead.js"
-import {latLngToHK1980} from "./hk1980.js";
-import {latLngToOsmShortUrl} from "./osmShortUrl.js";
-import {latLngToGeohash} from "./geohash.js";
+import {latLngToUTM, latLngToMGRS, utmStrToLatLng, mgrsStrToLatLng} from "./utm.js";
+import {latLngToMaidenhead, maidenheadToLatLng} from "./maidenhead.js"
+import {latLngToHK1980, hk1980ToLatLng} from "./hk1980.js";
+import {latLngToOsmShortUrl, osmShortUrlToLatLng} from "./osmShortUrl.js";
+import {latLngToGeohash, geohashToLatLng} from "./geohash.js";
 import {} from "./hkgov-api.js";
 import {} from "../../libs/Leaflet.Coordinates@MrMufflon/Leaflet.Coordinates-0.1.5.min.js";
 import {} from "../../libs/Leaflet.ImageOverlay.Rotated@IvanSanchez/Leaflet.ImageOverlay.Rotated.min.js";
@@ -133,11 +133,11 @@ map.getPane("labels").style.pointerEvents = "none";
 
 let locationMarker = function (map, lat, lng) {
   let marker;
-  let utm = latLngToUTM(lat, lng);
-  let mgrs = latLngToMGRS(lat, lng);
+  const utm = latLngToUTM(lat, lng);
+  const mgrs = latLngToMGRS(lat, lng);
   mgrs[1] = mgrs[1].toString().padStart(5, "0");
   mgrs[2] = mgrs[2].toString().padStart(5, "0");
-  let truncatedLat = L.NumberFormatter.round(lat, 5), truncatedLng = L.NumberFormatter.round(lng, 5);
+  const truncatedLat = L.NumberFormatter.round(lat, 5), truncatedLng = L.NumberFormatter.round(lng, 5);
 
   let container = document.createElement("div");
   container.innerHTML = `WGS84 coords: (${truncatedLat}, ${truncatedLng})
@@ -146,7 +146,7 @@ let locationMarker = function (map, lat, lng) {
 <br>Maidenhead: ${latLngToMaidenhead(lat, lng)}
 <br>Geohash: ${latLngToGeohash(lat, lng)}`;
   if (L.latLngBounds([[22.13, 113.82], [22.57, 114.5]]).contains([lat, lng])) {
-    let hk1980GridCoord = latLngToHK1980(lat, lng);
+    const hk1980GridCoord = latLngToHK1980(lat, lng);
     container.innerHTML += `<br>HK1980 grid coords: ${hk1980GridCoord[1]}mN ${hk1980GridCoord[0]}mE`;
   };
 
@@ -204,8 +204,21 @@ map.on("click", (ev) => {
   locationMarker(map, ev.latlng.lat, ev.latlng.lng).addTo(map).openPopup();
 });
 
+let drawGrid = function (bound, center, setView = false) {
+  const marker = locationMarker(map, center[0], center[1]);
+  layerControl.addOverlay(L.layerGroup([
+    L.rectangle(bound, { color: "#ff7800" }),
+    marker
+  ]), code);
+  if (setView) {
+    map.fitBounds(bound);
+    layerControl.getContainer().children[1].children[2].querySelector("label:last-child input").click();
+    marker.openPopup();
+  };
+};
+
 // Serach button
-let SearchBtn = L.Control.extend({
+const SearchBtn = L.Control.extend({
   options: {
     position: "topleft"
   },
@@ -225,10 +238,10 @@ let SearchBtn = L.Control.extend({
     return el;
   }
 });
-let searchBtn = new SearchBtn({ position: "topleft" }).addTo(map);
+const searchBtn = new SearchBtn({ position: "topleft" }).addTo(map);
 
 // File loader
-let FileLoader = L.Control.extend({
+const FileLoader = L.Control.extend({
   options: {
     position: "topleft"
   },
@@ -264,9 +277,9 @@ let FileLoader = L.Control.extend({
     return el;
   }
 });
-let fileLoader = new FileLoader({ position: "topleft" }).addTo(map);
+const fileLoader = new FileLoader({ position: "topleft" }).addTo(map);
 
-let Paste = L.Control.extend({
+const Paste = L.Control.extend({
   options: {
     position: "topleft"
   },
@@ -287,7 +300,7 @@ let Paste = L.Control.extend({
         if (!item.types.includes("image/png")) {
           throw new Error("Clipboard does not contain PNG image data.");
         };
-        let url = URL.createObjectURL(await item.getType("image/png"));
+        const url = URL.createObjectURL(await item.getType("image/png"));
         console.debug(url);
         let imageOverlay = L.imageOverlay.rotated(url, map.getBounds().getNorthWest(), map.getBounds().getNorthEast(), map.getBounds().getSouthWest(), {
           opacity: 0.5,
@@ -327,9 +340,9 @@ let Paste = L.Control.extend({
     return el;
   }
 });
-let paste = new Paste({ position: "topleft" }).addTo(map);
+const paste = new Paste({ position: "topleft" }).addTo(map);
 
-let Projection = L.Control.extend({
+const Projection = L.Control.extend({
   options: {
     position: "topleft"
   },
@@ -349,9 +362,9 @@ let Projection = L.Control.extend({
     return el;
   }
 });
-let projection = new Projection().addTo(map);
+const projection = new Projection().addTo(map);
 
-let ViewSource = L.Control.extend({
+const ViewSource = L.Control.extend({
   options: {
     position: "bottomleft"
   },
@@ -368,9 +381,29 @@ let ViewSource = L.Control.extend({
     return el;
   }
 });
-let viewSource = new ViewSource().addTo(map);
+const viewSource = new ViewSource().addTo(map);
 
-let GridCoords = L.GridLayer.extend({
+const HelpBtn = L.Control.extend({
+  options: {
+    position: "bottomleft"
+  },
+  onAdd: function () {
+    let el = L.DomUtil.create("div", "leaflet-bar leaflet-control");
+    let a = L.DomUtil.create("a", "leaflet-bar-part leaflet-bar-part-single", el);
+    a.textContent = "❓";
+    a.href = "/docs/map/";
+    a.target = "_blank";
+    a.setAttribute("role", "button");
+    a.style.fontSize = "1.1rem";
+
+    L.DomEvent.on(a, "click", L.DomEvent.stopPropagation);
+
+    return el;
+  }
+});
+const helpBtn = new HelpBtn().addTo(map);
+
+const GridCoords = L.GridLayer.extend({
   options: {
     opacity: 0.7
   },
@@ -384,16 +417,58 @@ let GridCoords = L.GridLayer.extend({
 layerControl.addOverlay(new GridCoords(), "Grid cells");
 
 if (location.hash) {
-  let coords = location.hash.split(",");
-  let latitude = parseFloat(coords[0].slice(1));
-  let longitude = parseFloat(coords[1]);
+  const coords = location.hash.split(",");
+  const latitude = parseFloat(coords[0].slice(1));
+  const longitude = parseFloat(coords[1]);
   if (coords[2]) {
-    let scale = parseFloat(coords[2].split(/^(\d*)z$/g)[1]);
+    const scale = parseFloat(coords[2].split(/^(\d*)z$/g)[1]);
     map.setView([latitude, longitude], scale);
   } else {
     map.setView([latitude, longitude]);
   };
   locationMarker(map, latitude, longitude).addTo(map).openPopup();
+};
+
+const params = new URL(location.href).searchParams;
+
+if (params.get("utm")) {
+  const args = utmStrToLatLng(params.get("utm"));
+  locationMarker(map, args[0], args[1]).addTo(map).openPopup();
+};
+
+if (params.get("mgrs")) {
+  const args = mgrsStrToLatLng(params.get("mgrs"));
+  drawGrid(args.bound, args.center, params.get("mgrs"), true);
+};
+
+if (params.get("plus")) {
+  const args = params.get("plus").replace(" ", "+");
+  const code = args.match(/(^|\s)([23456789C][23456789CFGHJMPQRV][023456789CFGHJMPQRVWX]{6}\+[23456789CFGHJMPQRVWX]{2,})(\s|$)/i)[2];
+  const area = OpenLocationCode.decode(code);
+  drawGrid([[area.latitudeLo, area.longitudeLo], [area.latitudeHi, area.longitudeHi]], [area.latitudeCenter, area.longitudeCenter], true);
+};
+
+if (params.get("mdh")) {
+  const args = maidenheadToLatLng(params.get("mdh"));
+  drawGrid(args.bound, args.center, params.get("mdh"), true);
+};
+
+/*
+if (params.get("gh")) {
+  const args = geohashToLatLng(params.get("gh"));
+  drawGrid(args.bound, args.center, params.get("gh"), true);
+};
+
+if (params.get("osm")) {
+  const args = osmShortUrlToLatLng(params.get("osm"));
+  map.setZoom(args[2]);
+  locationMarker(map, args[0], args[1]).addTo(map).openPopup();
+};
+*/
+
+if (params.get("hk1980")) {
+  const args = osmShortUrlToLatLng(params.get("hk1980"));
+  locationMarker(map, args[0], args[1]).addTo(map).openPopup();
 };
 
 self.map = map;
