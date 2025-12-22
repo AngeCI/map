@@ -143,6 +143,8 @@ let locationMarker = function (map, lat, lng) {
   container.innerHTML = `WGS84 coords: (${truncatedLat}, ${truncatedLng})
 <br>UTM: ${utm[0]}${utm[1]} ${utm[2]} ${utm[3]}
 <br>MGRS: ${mgrs.join(" ")}
+<br>Plus Code (global): ${OpenLocationCode.encode(lat, lng)}
+<br>Plus Code (local): ${OpenLocationCode.encode(lat, lng).slice(4)}
 <br>Maidenhead: ${latLngToMaidenhead(lat, lng)}
 <br>Geohash: ${latLngToGeohash(lat, lng)}`;
   if (L.latLngBounds([[22.13, 113.82], [22.57, 114.5]]).contains([lat, lng])) {
@@ -204,12 +206,12 @@ map.on("click", (ev) => {
   locationMarker(map, ev.latlng.lat, ev.latlng.lng).addTo(map).openPopup();
 });
 
-let drawGrid = function (bound, center, setView = false) {
+let drawGrid = function (bound, center, name, setView = false) {
   const marker = locationMarker(map, center[0], center[1]);
   layerControl.addOverlay(L.layerGroup([
     L.rectangle(bound, { color: "#ff7800" }),
     marker
-  ]), code);
+  ]), name);
   if (setView) {
     map.fitBounds(bound);
     layerControl.getContainer().children[1].children[2].querySelector("label:last-child input").click();
@@ -433,7 +435,7 @@ const params = new URL(location.href).searchParams;
 
 if (params.get("utm")) {
   const args = utmStrToLatLng(params.get("utm"));
-  locationMarker(map, args[0], args[1]).addTo(map).openPopup();
+  locationMarker(map, args[1], args[0]).addTo(map).openPopup();
 };
 
 if (params.get("mgrs")) {
@@ -445,7 +447,7 @@ if (params.get("plus")) {
   const args = params.get("plus").replace(" ", "+");
   const code = args.match(/(^|\s)([23456789C][23456789CFGHJMPQRV][023456789CFGHJMPQRVWX]{6}\+[23456789CFGHJMPQRVWX]{2,})(\s|$)/i)[2];
   const area = OpenLocationCode.decode(code);
-  drawGrid([[area.latitudeLo, area.longitudeLo], [area.latitudeHi, area.longitudeHi]], [area.latitudeCenter, area.longitudeCenter], true);
+  drawGrid([[area.latitudeLo, area.longitudeLo], [area.latitudeHi, area.longitudeHi]], [area.latitudeCenter, area.longitudeCenter], args, true);
 };
 
 if (params.get("mdh")) {
@@ -467,8 +469,8 @@ if (params.get("osm")) {
 */
 
 if (params.get("hk1980")) {
-  const args = osmShortUrlToLatLng(params.get("hk1980"));
-  locationMarker(map, args[0], args[1]).addTo(map).openPopup();
+  const args = hk1980ToLatLng(params.get("hk1980")).match(/(\d+)\s*,\s*(\d+)/);
+  locationMarker(map, args[2], args[1]).addTo(map).openPopup();
 };
 
 self.map = map;

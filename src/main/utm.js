@@ -120,14 +120,14 @@ let mgrsToLatLng = function (zone, million, precision, e, n) {
   const yZone = zone.match(/[A-Za-z]/)[0].toUpperCase();
   const eCycle = (xZone - 1) % 3;
   const nCycle = !(xZone & 1);
-  const eOffset = String.charCodeAt(0) - 64 - eCycle * 9;
-  const nOffset = String.charCodeAt(1) - 65 - nCycle * 5;
+  const eOffset = million.charCodeAt(0) - 64 - eCycle * 9;
+  const nOffset = million.charCodeAt(1) - 65 - nCycle * 5;
   const precisionMultiplier = [100000, 10000, 1000, 100, 10, 1][precision];
   const swCorner = utmToLatLng(xZone, yZone, e * precisionMultiplier + eOffset * 100000, n * precisionMultiplier + nOffset * 100000);
 
   return {
-    bound: [swCorner, [swCorner[0] + precisionMultiplier, swCorner[1] + precisionMultiplier]],
-    center: [swCorner[0] + precisionMultiplier * 0.5, swCorner[1] + precisionMultiplier * 0.5]
+    bound: [[swCorner[1], swCorner[0]], [swCorner[1] + precisionMultiplier, swCorner[0] + precisionMultiplier]],
+    center: [swCorner[1] + precisionMultiplier * 0.5, swCorner[0] + precisionMultiplier * 0.5]
   };
 };
 
