@@ -118,10 +118,52 @@ let utmStrToLatLng = function (utmStr) {
 let mgrsToLatLng = function (zone, million, precision, e, n) {
   const xZone = parseInt(zone.match(/\d+/)[0]);
   const yZone = zone.match(/[A-Za-z]/)[0].toUpperCase();
-  const eCycle = (xZone - 1) % 3;
+
+  const eCycle = ((xZone - 1) * 43691 & 0x1ffff) * 3 >>> 17; // (xZone - 1) % 3
   const nCycle = !(xZone & 1);
+
   const eOffset = million.charCodeAt(0) - 64 - eCycle * 9;
-  const nOffset = million.charCodeAt(1) - 65 - nCycle * 5;
+  let nOffset = million.charCodeAt(1) - 65 - nCycle * 5;
+  if (eOffset < 0) eOffset += 26;
+  if (nOffset < 0) nOffset += 26;
+
+  const table = [67, 70, 72, 75, 81, 83, 85, 88];
+  let yZoneIndex = yZone.charCodeAt(0), nBigCycle;
+  if (yZoneIndex > 77) { // northern hemisphere
+    if (table.indexOf(yZoneIndex) > -1) {
+      nBigCycle = table.indexOf(yZoneIndex) - 3;
+      if (yZoneIndex < 78)
+        nBigCycle--;
+    } else {
+      if (yZoneIndex = 82) {
+        nBigCycle = 1;
+      } else if (yZoneIndex = 84) {
+        nBigCycle = 2;
+      } else if (yZoneIndex > 85 && yZoneIndex < 88) {
+        nBigCycle = 3;
+      } else if (yZoneIndex > 88) {
+        nBigCycle = 4;
+      };
+    };
+  } else { // southern hemisphere
+    if (table.indexOf(yZoneIndex) > -1) {
+      nBigCycle = 4 - table.indexOf(yZoneIndex);
+      if (yZoneIndex < 78)
+        nBigCycle--;
+    } else {
+      if (yZoneIndex > 72 && yZoneIndex < 75) {
+        nBigCycle = 1;
+      } else if (yZoneIndex = 71) {
+        nBigCycle = 2;
+      } else if (yZoneIndex > 67 && yZoneIndex < 70) {
+        nBigCycle = 3;
+      } else if (yZoneIndex < 67) {
+        nBigCycle = 4;
+      };
+    };
+  };
+  nOffset += nBigCycle * 20;
+
   const precisionMultiplier = [100000, 10000, 1000, 100, 10, 1][precision];
   const swCorner = utmToLatLng(xZone, yZone, e * precisionMultiplier + eOffset * 100000, n * precisionMultiplier + nOffset * 100000);
 
@@ -132,7 +174,11 @@ let mgrsToLatLng = function (zone, million, precision, e, n) {
 };
 
 let mgrsStrToLatLng = function (mgrsStr) {
-  const groups = mgrsStr.match(/(\d{1,2}[A-Z])([A-Z]{2}) (\d*) (\d*)/);
+  const largeGrid = mgrsStr.match(/(\d{1,2}[A-Z])([A-Z]{2})\s*$/i);
+  if (largeGrid)
+    return mgrsToLatLng(largeGrid[1], largeGrid[2], 0, 0, 0);
+
+  const groups = mgrsStr.match(/(\d{1,2}[A-Z])([A-Z]{2}) (\d*) (\d*)/i);
   return mgrsToLatLng(groups[1], groups[2], Math.min(groups[3].length, groups[4].length), parseInt(groups[3]), parseInt(groups[4]));
 };
 

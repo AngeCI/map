@@ -469,7 +469,7 @@ if (params.get("osm")) {
 */
 
 if (params.get("hk1980")) {
-  const args = hk1980ToLatLng(params.get("hk1980")).match(/(\d+)\s*,\s*(\d+)/);
+  const args = hk1980ToLatLng(params.get("hk1980").match(/(\d+)\s*,\s*(\d+)/));
   locationMarker(map, args[2], args[1]).addTo(map).openPopup();
 };
 
