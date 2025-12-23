@@ -122,7 +122,7 @@ let mgrsToLatLng = function (zone, million, precision, e, n) {
   const eCycle = ((xZone - 1) * 43691 & 0x1ffff) * 3 >>> 17; // (xZone - 1) % 3
   const nCycle = !(xZone & 1);
 
-  const eOffset = million.charCodeAt(0) - 64 - eCycle * 9;
+  let eOffset = million.charCodeAt(0) - 64 - eCycle * 9;
   let nOffset = million.charCodeAt(1) - 65 - nCycle * 5;
   if (eOffset < 0) eOffset += 26;
   if (nOffset < 0) nOffset += 26;
