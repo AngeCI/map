@@ -12,16 +12,19 @@ import {} from "../../libs/Leaflet.ImageOverlay.Rotated@IvanSanchez/Leaflet.Imag
 
 // Base map source definitions
 const baseMaps = {
+  "Blank": L.tileLayer("data:image/gif;base64,R0lGODlhmwCbAHAAACH5BAEAAAEALAAAAACbAJsAgQAAAAAAAAAAAAAAAAJ9jI+py+0Po5y02ouz3rz7D4biSJbmiabqyrbuC8fyTNf2jef6zvf+DwwKh8Si8YhMKpfMpvMJjUqn1Kr1is1qt9yu9wsOi8fksvmMTqvX7Lb7DY/L5/S6/Y7P6/f8vv8PGCg4SFhoeIiYqLjI2Oj4CBkpOUlZaXmJmam5ydlA6fkJGio6SlpqeoqaqrrK2ur6ChsrO0tba3uLm6u7y9vr+wscLDxMXGx8jJysvMzc7PwMHS09TV1tfY2drb3N3QTt7VkAADs=", {
+    maxZoom: 21
+  }),
   "OpenStreetMap": L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxNativeZoom: 19,
     maxZoom: 21,
     attribution: '© <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
   }),
-  "CartoDB (light)": L.tileLayer("https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png", {
+  "CartoDB (light) (DEPRECATED)": L.tileLayer("https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png", {
     maxZoom: 29,
     attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, © <a href="https://carto.com/attribution">CARTO</a>'
   }),
-  "CartoDB (dark)": L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png", {
+  "CartoDB (dark) (DEPRECATED)": L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png", {
     maxZoom: 29,
     attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, © <a href="https://carto.com/attribution">CARTO</a>'
   }),
@@ -36,17 +39,17 @@ const baseMaps = {
     maxZoom: 21,
     attribution: '© <a href="https://api.portal.hkmapservice.gov.hk/disclaimer">Lands Department <img src="https://api.hkmapservice.gov.hk/mapapi/landsdlogo.jpg" width="25" height="25" /></a>'
   }),
-  "OpenFreeMap Liberty": L.maplibreGL({
+  "OpenFreeMap Liberty (needs fix)": L.maplibreGL({
     style: "https://tiles.openfreemap.org/styles/liberty",
     maxZoom: 21,
     attribution: '© <a href="https://openfreemap.org">OpenFreeMap</a>'
   }),
-  "OpenFreeMap Positron": L.maplibreGL({
+  "OpenFreeMap Positron (needs fix)": L.maplibreGL({
     style: "https://tiles.openfreemap.org/styles/positron",
     maxZoom: 21,
     attribution: '© <a href="https://openfreemap.org">OpenFreeMap</a>'
   }),
-  "OpenFreeMap Bright": L.maplibreGL({
+  "OpenFreeMap Bright (needs fix)": L.maplibreGL({
     style: "https://tiles.openfreemap.org/styles/bright",
     maxZoom: 21,
     attribution: '© <a href="https://openfreemap.org">OpenFreeMap</a>'
@@ -54,12 +57,12 @@ const baseMaps = {
 };
 
 const labelMaps = {
-  "CartoDB (light)": L.tileLayer("https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png", {
+  "CartoDB (light) (DEPRECATED)": L.tileLayer("https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png", {
     maxZoom: 29,
     attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, © <a href="https://carto.com/attribution">CARTO</a>',
     pane: "labels"
   }),
-  "CartoDB (dark)": L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}.png", {
+  "CartoDB (dark) (DEPRECATED)": L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}.png", {
     maxZoom: 29,
     attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, © <a href="https://carto.com/attribution">CARTO</a>',
     pane: "labels"
@@ -91,7 +94,7 @@ const labelMaps = {
 const map = L.map("map", {
   attributionControl: true,
   zoomControl: false, // Move zoom control elsewhere
-  layers: [baseMaps.OpenStreetMap],
+  layers: [baseMaps.Blank], // [baseMaps.OpenStreetMap],
   center: [22.35, 114.16],
   worldCopyJump: true,
   zoom: 11
@@ -385,6 +388,37 @@ const ViewSource = L.Control.extend({
 });
 const viewSource = new ViewSource().addTo(map);
 
+let darkTheme = false;
+
+const ToggleThemeBtn = L.Control.extend({
+  options: {
+    position: "bottomleft"
+  },
+  onAdd: function () {
+    let el = L.DomUtil.create("div", "leaflet-bar leaflet-control");
+    let a = L.DomUtil.create("a", "leaflet-bar-part leaflet-bar-part-single", el);
+    a.textContent = "🌓";
+    a.href = "#";
+    a.setAttribute("role", "button");
+    a.style.fontSize = "1.1rem";
+
+    L.DomEvent.on(a, "click", function (ev) {
+      L.DomEvent.stopPropagation(ev);
+      L.DomEvent.preventDefault(ev);
+
+      if (darkTheme)
+        map._container.querySelector(".leaflet-map-pane").style.filter = "";
+      else
+        map._container.querySelector(".leaflet-map-pane").style.filter = "invert(1)";
+
+      darkTheme = !darkTheme;
+    });
+
+    return el;
+  }
+});
+const toggleTheme = new ToggleThemeBtn().addTo(map);
+
 const HelpBtn = L.Control.extend({
   options: {
     position: "bottomleft"
@@ -469,8 +503,14 @@ if (params.get("osm")) {
 */
 
 if (params.get("hk1980")) {
-  const args = hk1980ToLatLng(params.get("hk1980").match(/(\d+)\s*,\s*(\d+)/));
-  locationMarker(map, args[2], args[1]).addTo(map).openPopup();
+  const args = params.get("hk1980").match(/(\d+)\s*,\s*(\d+)/);
+  const coords = hk1980ToLatLng(parseInt(args[1]), parseInt(args[0]));
+  locationMarker(map, coords[1], coords[0]).addTo(map).openPopup();
+};
+
+if (params.get("ll")) {
+  const coords = params.get("ll").split(",");
+  locationMarker(map, parseFloat(coords[0]), parseFloat(coords[1])).addTo(map).openPopup();
 };
 
 self.map = map;
